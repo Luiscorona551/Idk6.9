@@ -24,9 +24,9 @@ const MAX_AGE = 60 * 60 * 24 * 30;
 const PUBLIC = [
   /^\/$/,
   /^\/index\.html$/,
-  /^\/css\/setup\.css$/,
-  /^\/js\/setup\.js$/,
-  /^\/assets\//,
+  /^\/setup\.css$/,
+  /^\/setup\.js$/,
+  /^\/(?:ugs-icon\.jpeg|official-flag\.jpg)$/,
   /^\/favicon\.ico$/
 ];
 

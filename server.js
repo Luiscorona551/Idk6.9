@@ -31,7 +31,7 @@ app.post('/api/ai', aiRequest);
 
 // Ultraviolet's own uv.config.js is overridden by ours so the service worker
 // lives under /uv/ instead of the site root.
-app.get('/uv/uv.config.js', (req, res) => res.sendFile(join(root, 'public/uv/uv.config.js')));
+app.get('/uv/uv.config.js', (req, res) => res.sendFile(join(root, 'uv.config.js')));
 app.use('/uv/', express.static(uvPath));
 app.use('/baremux/', express.static(baremuxPath));
 app.use('/epoxy/', express.static(epoxyPath));

@@ -999,8 +999,8 @@ async function searchApp() {
 
   try {
     const [names, icons] = await Promise.all([
-      loadJSON('data/games.json'),
-      loadJSON('data/game-icons.json').catch(() => ({}))
+      loadJSON('games.json'),
+      loadJSON('game-icons.json').catch(() => ({}))
     ]);
     const apps = Object.entries(APPS)
       .filter(([id]) => !['player', 'panic', 'search'].includes(id))
@@ -1208,14 +1208,14 @@ const APPS = {
 
   games: {
     title: 'Games',
-    glyph: '<img src="assets/ugs-icon.jpeg" alt="">',
+    glyph: '<img src="ugs-icon.jpeg" alt="">',
     desktop: true,
     width: 900,
     height: 620,
     async render() {
       const [names, icons] = await Promise.all([
-        loadJSON('data/games.json'),
-        loadJSON('data/game-icons.json').catch(() => ({}))
+        loadJSON('games.json'),
+        loadJSON('game-icons.json').catch(() => ({}))
       ]);
       const items = names.map(name => ({
         id: name,
