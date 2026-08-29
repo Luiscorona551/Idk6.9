@@ -22,10 +22,23 @@ const root = dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.set('trust proxy', 1);
 
+const backend = {
+  proxy: Boolean(wisp && typeof wisp.routeRequest === 'function'),
+  chat: Boolean(chat && typeof chat.handleUpgrade === 'function')
+};
+
+function backendStatus() {
+  return { ...backend, ai: aiStatus() };
+}
+
 app.use(express.json({ limit: '64kb' }));
-app.get('/healthz', (req, res) => res.json({ ok: true, service: 'ugs-desktop', https: req.secure }));
+app.get('/healthz', (req, res) => {
+  const status = backendStatus();
+  const ok = status.proxy && status.chat;
+  res.status(ok ? 200 : 503).json({ ok, service: 'ugs-desktop', https: req.secure, ...status });
+});
 setupRoutes(app);
-app.get('/api/status', (req, res) => res.json({ ok: true, proxy: true, chat: true, ai: aiStatus() }));
+app.get('/api/status', (req, res) => res.json({ ok: true, ...backendStatus() }));
 app.get('/api/ai/status', (req, res) => res.json(aiStatus()));
 app.post('/api/ai', aiRequest);
 
@@ -49,9 +62,9 @@ server.on('upgrade', (req, socket, head) => {
   const requestURL = req.url || '';
   if (!hasSession(req)) {
     socket.destroy();
-  } else if (requestURL.startsWith('/wisp/')) {
+  } else if (/^\/wisp(?:\/|\?|$)/.test(requestURL)) {
     wisp.routeRequest(req, socket, head);
-  } else if (requestURL.startsWith('/chat')) {
+  } else if (/^\/chat(?:\?|$)/.test(requestURL)) {
     chat.handleUpgrade(req, socket, head, ws => chat.emit('connection', ws, req));
   } else {
     socket.destroy();
@@ -59,5 +72,9 @@ server.on('upgrade', (req, socket, head) => {
 });
 
 const port = Number(process.env.PORT) || 8080;
+const host = process.env.HOST || '0.0.0.0';
 const protocol = httpsKey && httpsCert ? 'https' : 'http';
-server.listen(port, () => console.log(`UGS listening on ${protocol}://localhost:${port}`));
+server.listen(port, host, () => {
+  console.log(`UGS listening on ${protocol}://${host}:${port}`);
+  console.log(`Backends ready: Proxy | Chat | AI ${aiStatus().configured ? 'configured' : 'waiting for AI_API_KEY'}`);
+});
